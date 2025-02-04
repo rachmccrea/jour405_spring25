@@ -7,14 +7,25 @@ Follow along with the demo to learn how to calculate percentage change using R a
 
 ### Task 1: Load the tidyverse
 
+```{r}
+library(tidyverse)
+```
 
 
 ### Task 2: Load the UMD Fees dataset from https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/umd_fees.csv
+
+```{r}
+umd_fees <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/umd_fees.csv")
+```
 
 
 
 ### Task 3: Calculate the percentage change in each category between Fall 2024 and Fall 2021 using `mutate()`
 
+```{r}
+umd_fees_pct <- umd_fees %>% mutate(pct_change = (`Fall 2024` - `Fall 2021`)/`Fall 2021` * 100)
+
+```
 
 
 ### Task 4: Describe our results
@@ -22,7 +33,7 @@ Follow along with the demo to learn how to calculate percentage change using R a
 Write a few sentences about what you found in the data. What's the story here?
 
 
-
+Student fees at the University of Maryland have risen by over 18% since 2021, according to a data analysis. Student sustainability fees have more than doubled while shuttle bus fees have gone up by almost forty percent. Other fee increases are related to recreation, student activities, and the student union. [I want to add the new counseling center fee, but since the growth is "infinite" does it contribute to the total increase in student fees?]
 
 
 When you are done, save your work, switch to GitHub Desktop, then add, commit and push your changes to GitHub and submit the URL of the notebook in ELMS.
