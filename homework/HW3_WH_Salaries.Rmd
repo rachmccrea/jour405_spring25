@@ -9,6 +9,7 @@ In this assignment, we will be working with a dataset containing information abo
 You will need to load the tidyverse library
 
 ```{r}
+library(tidyverse)
 ```
 
 Then you'll load the data from the web. The URL for the data is: https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/biden_wh_salaries_2024.csv. You will create a dataframe called `wh_salaries` that contains the data from this URL.
@@ -16,19 +17,26 @@ Then you'll load the data from the web. The URL for the data is: https://raw.git
 ### Task 2: Load the Data and Describe It
 
 ```{r}
+wh_salaries <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/biden_wh_salaries_2024.csv")
+
 ```
 ### Task 3: Describe the Data
 
 You should examine that dataframe carefully by clicking on it in the Environment tab in RStudio. Write a couple of sentences describing the categories of incidents. From a reporting standpoint, what stands out to you about this data? Are there any salary values that will cause problems for analysis?
 
-ANSWER HERE
+The categories include the name of the employee, their status (employee or detailee), their salary, and their title. Some folks don't get paid anything,  which could definitely cause problems for reporters because the $0 values could throw off the summary data (mean, median,etc). I also noticed that there are a ton of different job titles, which could make it hard to sort employees by where in the White House they work. 
+
 
 ### Task 4: Calculate the Mean and Median of the Salaries
 
 Write code to calculate the mean and median of the salaries in the dataset using the `summarize()` function. You don't need to make a new dataframe, just display the results.
 
 ```{r}
-
+wh_salaries %>% summarize(mean(salary))
+wh_salaries %>% summarize(median(salary))
+#mean = 107036.6
+#median = 110500
+#I looked up "summarize" in help and decided to plug the mean() function in. I'm not sure that's the right way to do it, but it ran!
 ```
 
 ### Task 5: Add in the minimum and maximum salaries
@@ -36,17 +44,45 @@ Write code to calculate the mean and median of the salaries in the dataset using
 Take the code you just wrote and add in the minimum and maximum salaries (the functions for that are `min()` and `max()`). Your results should show four columns: mean_salary, median_salary, min_salary, max_salary.
 
 ```{r}
+mean_salary <- wh_salaries %>% summarize(mean(salary)) %>% 
+median_salary <- wh_salaries %>% summarize(median(salary)) %>% 
+min_salary <- wh_salaries %>% summarize(min(salary)) %>% 
+max_salary <- wh_salaries %>% summarize(max(salary))
+#it's giving me an error message ("could not find function %>%<-") but all of it ran
+#min_salary = 0 and max salary 251258
+#it didn't give me columns, it gave me four objects that I could click on. Gonna try a different strategy. 
+mean_salary <- wh_salaries %>% mutate(summarize(mean(salary)),
+                                      summarize(median(salary)),
+                                      summarize(min(salary)),
+                                      summarize(max(salary)))
+#same issue: could not find function %>%<-
+#consulting chat gpt. it says it's probably because I don't have "dplyr" but also said I should have the new column name in the summarize function so I'm gonna try that first. gonna put it in a different code block too. 
+```
+```{r}
+mean_salary <- wh_salaries %>% mutate(summarize(mean_salary = mean(salary)),
+                                      summarize(mean_salary = median(salary)),
+                                      summarize(mean_salary = min(salary)),
+                                      summarize(mean_salary = max(salary)))
+#well that didn't work. I'll try my first one with the column names. 
 
 ```
+```{r}
+mean_salary <- wh_salaries %>% summarize(mean_salary = mean(salary)) %>% 
+median_salary <- wh_salaries %>% summarize(median_salary = median(salary)) %>% 
+min_salary <- wh_salaries %>% summarize(min_salary = min(salary)) %>% 
+max_salary <- wh_salaries %>% summarize(max_salary = max(salary))
+#well I have the info. 
+```
+
 
 ### Task 6: Describe the Results
 
 Write a couple of sentences describing the results of your analysis. What do the mean and median salaries tell you about the data? What do the minimum and maximum salaries tell you? Are there any outliers in the data?
 
-ANSWER HERE
+I was having some trouble making this columns (asked ChatGPT about an error message I was getting ("could not find function %>%<-") and it told me to download dplyr, which I have, and to put the column name in summarise, which I did. no luck). Got the data anyway! The mean and median salaries tell me that you'll probably be earning six figures if you work in the White House. The max salary is 251K, I thought that might be Biden's salary but there's an "associate counsel" earning that much. The minimum salary is 0 because there were some unpaid positions listed in the data. 
 
 ### Task 7: Story Idea
 
 Based on the data, what is your best story idea? What is the next step you would take to develop that story idea?
 
-ANSWER HERE
+My best story idea here would be to compare the White House salary data to other federal government salaries -- 110K median salary seems like a lot. Are White House employees earning more than the average federal employee? My first next step would be to find employment and salary data from every other federal agency possible and load it into R, run the same summary statistics, and put everthing together into a dataframe to compare it. 
