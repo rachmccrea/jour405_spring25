@@ -6,21 +6,48 @@ Follow along with the demo to learn how to calculate crime rates using R and the
 
 ### Task 1: Load the tidyverse and install and load janitor
 
+```{r}
+library(tidyverse)
+install.packages("janitor")
+library(janitor)
+```
 
 
 ### Task 2: Load the crime dataset from https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/md_annual_crime.csv
 
+```{r}
+crimes <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/md_annual_crime.csv") %>% clean_names()
+```
 
 
 ### Task 3: Use janitor to clean up the column names
 
-
+did that in task 3
 
 ### Task 4: Calculate the total crime rate for each year (picking our unit!)
 
+```{r}
+total_crime_rate <- crimes %>% mutate(total_rate = grand_total/population * 10000)
+
+#rate = (crimes / population) * rate unit like per capita, per one thousand, etc
+#rates take population into account
+#don't pick a rate unit that's too high or too low
+#total_rate = crimes per 10,000 people (so there were 591 crimes per every 10K people in 1975, but 203 per 10k in 2020. Way safer than it used to be, like the rest of the USA)
+#as a journalist, you should be skeptical of simple solutions to complex problems. 
+```
 
 
 ### Task 5: Calculate the violent and property crime rates for each year (same unit)
+```{r}
+violent_crime_rate <- crimes %>% mutate(violent_rate = violent_crime_total/population * 10000)
+property_crime_rate <- crimes %>% mutate(property_rate = property_crime_total/population * 10000)
+
+#only thing that changes is the numerator
+#our perception of crime should take change over time into account! ask what caused this change over time. bad reporting processes? other factors? 
+
+
+```
+
 
 
 
@@ -28,6 +55,7 @@ Follow along with the demo to learn how to calculate crime rates using R and the
 
 Write a few sentences about what you found in the data. What years had the highest crime rates? What years had the lowest crime rates? Does the pattern match your expectations?
 
+I was surprised to see how much the crime rate in Maryland has gone down. Total crime rates have dropped by about half since the mid-1970s, so has property crime. Total crime rate also dropped since the mid-1970s. The 1970s didn't have the highest crime rates, though. 1979 and the early 1980s had the highest total crime rate, and the 90s had the highest violent crime rate. Property crimes peaked twice, once in the 1980s and once in the 1990s. It looks like crime has been on the decline for most of this century so far. 
 
 
 
