@@ -71,3 +71,54 @@ I DON'T KNOW HOW TO WRITE A DATA STORY NUT GRAF WITHOUT IT BECOMING AN INCOMPREH
 ### Task 9: Save Your Work and Put it on GitHub
 
 Save this notebook, then commit it to your local repository. Push the changes to your GitHub repository and submit the URL for this file in ELMS.
+
+### Task 10: Percentiles 
+Using the 2020 violent crime rate, calculate the percentiles using `ntile()`. Save the results to a new dataframe called `md_cities_percentiles`. How many cities are above the 90th percentile?
+
+Calculate the Interquartile Range of the 2020 violent crime rate using `summarize()` and R's `IQR()` function. The syntax is similar to how `mean()` works.
+
+Do the results change your best story idea from the previous assignment? Why or why not?
+
+```{r}
+#this is what we did for vball: team_aces %>% mutate(percentile = ntile(total_aces, 100))
+#so it would be new dataframe name <- [dataframe] %>% mutate(percentile = ntile(column_name, 100))
+md_cities_percentiles <- md_cities_rates %>% mutate(percentile = ntile(violent_rate_2020, 100))
+
+```
+```{r}
+md_cities_percentiles %>% group_by(city) %>% summarize(interquartle_range = IQR(percentile))
+#WHY IS IT ALL ZERO!!!!
+```
+```{r}
+crime_iqr <- md_cities_percentiles %>% group_by(percentile) %>% summarize(interquartile_range = IQR(percentile))
+#bro what 
+#consulting the help window
+```
+```{r}
+md_cities_percentiles %>% summarize(interquartile_range = IQR(percentile))
+#man I hope that's right. 
+#wait. IQR of violent crime rate in 2020. let me try again. 
+```
+```{r}
+md_cities_percentiles %>% summarize(interquartile_range = IQR(violent_rate_2020))
+#ok apparently the IQR is 4.198895
+#SQLpad.io says I should plug my whole dataset into the IQR() function. Gonna give it a go. 
+```
+```{r}
+md_cities_percentiles %>% summarize(interquartile_range = IQR(md_cities_percentiles))
+#NOOOOO 
+#I've decided I got it right the first time with 48
+#wait you know what. I'm gonna look at the data and see what's up. 
+#Yeah I think it's actually 4.198895
+```
+
+
+
+
+
+
+###ANSWERS 
+1: Cumberland is the 90th percentile, and there are 10 cities above the 90th percentile. 
+2. The IQR is 4.2 (rounded up from 4.198895)
+3. Honestly this doesn't change my best story idea from last time. I think it's still important to lead with crime in Ocean City. I might just not know the significance of the IQR, though. 
+
