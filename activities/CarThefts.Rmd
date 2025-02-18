@@ -6,23 +6,57 @@ Follow along with the demo to learn how to calculate standard deviation and how 
 
 ### Task 1: Load the tidyverse
 
+```{r}
+library(tidyverse)
+```
+
+
 
 ### Task 2: Load the car thefts dataset from https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/car_thefts_jan24.csv
+
+```{r}
+car_thefts <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/car_thefts_jan24.csv")
+#PG county car thefts by day in Jan24
+```
 
 
 ### Task 3: Calculate the standard deviation of the number of car thefts, along with the mean
 
+```{r}
+car_thefts %>% summarize(mean = mean(count), sd = sd(count)) 
+#mean compared to what!!!!
+#two different stats about the same column 
+#sd = 4.27....
+#mean = 12.67....
+#2/3 of data falls within one standard deviation on either side of the mean, so 2/3 of values here would be in between about 8 and about 16 
+#farther you get from the mean, farther you get into outlier territory 
+#small sd = values clustered around mean 
+#big sd = probably skewed one way or another 
+```
+
 
 ### Task 4: Create a histogram of the number of car thefts
 
+```{r}
+car_thefts %>% 
+  ggplot() + 
+  geom_histogram(aes(x = count), binwidth = 2) + 
+  geom_vline(aes(xintercept = mean(count)), color = "red", linetype = "dashed", size = 1) +
+    geom_vline(aes(xintercept = mean(count) - sd(count)), color = "blue", linetype = "dashed", size = 1) +
+  geom_vline(aes(xintercept = mean(count) + sd(count)), color = "blue", linetype = "dashed", size = 1)
+  #use + instead of %>% with ggplot
+#aesthetics go inside geom_histogram 
+```
+
+
 
 ### Task 5: Add a line to the histogram that shows the mean of the number of car thefts
-
+yup
 
 ### Task 6: Describe your results
 
 Is the distribution normal or skewed in one direction? Write a sentence in which you describe the range of the data covered by one standard deviation from the mean on both sides.
 
-
+The general shape is normal (most of the data is within a standard deviation of the mean), but within that range, the data is skewed a little bit to the right (high). Average isn't 100% the best option here because it's kind of likely that it'll actually be higher than the mean. The data isn't truly normal and need to take that into account when writing about it. 
 
 When you are done, save your work, switch to GitHub Desktop, then add, commit and push your changes to GitHub and submit the URL of the notebook in ELMS.
