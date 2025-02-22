@@ -7,18 +7,23 @@ In this assignment, you will be working with a dataset of songs played on Spotif
 ### Task 1: Load the tidyverse
 
 ```{r}
+library(tidyverse)
 ```
 
 ### Task 2: Load the Spotify Songs dataset from https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/spotify_2020.csv
 
 ```{r}
+spotify <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/spotify_2020.csv")
+
 ```
 
 ### Task 3: Calculate the mean and standard deviation of the danceability scores
 
-Write code to calculate the mean standard deviation of the danceability scores in the Spotify dataset. Display those.
+Write code to calculate the mean and standard deviation of the danceability scores in the Spotify dataset. Display those.
 
 ```{r}
+glimpse(spotify)
+
 ```
 
 ### Task 4: Create a histogram of the danceability scores
@@ -26,20 +31,79 @@ Write code to calculate the mean standard deviation of the danceability scores i
 Write code to create a histogram of the danceability scores in the Spotify dataset, based on the example we did in class.
 
 ```{r}
+spotify %>% 
+  ggplot() + 
+  geom_histogram(aes(x = danceability))
+
 ```
 
 ### Task 5: Add a line to the histogram for the mean danceability score
 
-Write code to add a vertical line to the histogram for the mean danceability score, based on the example in class.
+Take the same code and add a vertical line to the histogram for the mean danceability score, based on the example in class.
 
 ```{r}
+spotify %>% 
+  ggplot() + 
+  geom_histogram(aes(x = danceability)) + 
+  geom_vline(aes(xintercept = mean(danceability)), color = "green", linetype = "solid", size = )
+
+
 ```
 
-### Task 6: Describe our results
 
-Write a few sentences about the distribution of danceability scores in the Spotify dataset. Is it a normal distribution, or is it skewed in one direction? What does the mean and distribution tell us about the songs in the dataset?
+### Task 6: Add two lines to the histogram to show one standard deviation
 
-### Task 7: Save Your Work and Put it on GitHub
+Take the previous code and add two lines to the histogram for the 1st standard deviation below and above the mean score.
+
+```{r}
+spotify %>% 
+  ggplot() + 
+  geom_histogram(aes(x = danceability)) + 
+   geom_vline(aes(xintercept = mean(danceability)), color = "green", linetype = "solid", size = 0.5) + 
+  geom_vline(aes(xintercept = mean(danceability) + sd(danceability)), color = "blue", linetype = "dashed", size = 0.5) +
+   geom_vline(aes(xintercept = mean(danceability) - sd(danceability)), color = "blue", linetype = "dashed", size = 0.5)
+
+spotify %>% 
+summarize (mean(danceability))
+
+```
+
+### Task 7: Describe our results and pitch a story
+
+Write a few sentences about the distribution of danceability scores in the Spotify dataset. Is it a normal distribution, or is it skewed in one direction? What does the mean and one standard distribution tell us about the songs in the dataset? Draft a short story pitch from this data.
+
+The data is skewed to the right, towards a higher danceability score. The majority of the data is within one standard deviation of the mean, which I think means the IQR is relatively small and the data isn't super spread out.
+
+Pitch: Songs on Spotify (at least in this dataset) lean towards being more danceable. The majority of the data had a danceability score of over 50%(?), and the mean is 67%(?) danceability. Before I could really pitch a story on this, I think I'd want to look at how the amount of plays a song got correlated with danceability -- were more popular songs on Spotify more danceable? wait I bet I can do that. 
+
+Ok I did it. 
+
+New pitch: Songs on Spotify in 2020 leaned towards being more danceable. The mean danceability score of the data is 0.67, with the majority of danceability scores clustered around the mean. However, the news here is that the most popular songs on Spotify that year (those with a popularity score of 90 or higher) were more danceable on average. The mean danceability score for these songs was about 0.72, and all 23 top songs had a danceability of 0.5 or higher. It doesn't look like a normal distribution to me, though -- no bell curve. 
+```{r}
+popular <- spotify %>%
+  mutate(
+  most_popular = case_when (
+    popularity >= 90 ~ "most popular")
+  )
+most_popular <- popular %>% 
+  filter(most_popular == "most popular")
+```
+
+```{r}
+most_popular %>% 
+   ggplot() + 
+  geom_histogram(aes(x = danceability)) + 
+   geom_vline(aes(xintercept = mean(danceability)), color = "green", linetype = "solid", size = 0.5) + 
+  geom_vline(aes(xintercept = mean(danceability) + sd(danceability)), color = "blue", linetype = "dashed", size = 0.5) +
+   geom_vline(aes(xintercept = mean(danceability) - sd(danceability)), color = "blue", linetype = "dashed", size = 0.5)
+
+most_popular %>% 
+  summarize (mean(danceability))
+
+#learned how to filter in last week's data jour class. shoutout prof. ryan little!!!
+```
+
+
+### Task 8: Save Your Work and Put it on GitHub
 
 Save this notebook, then commit it to your local repository. Push the changes to your GitHub repository and submit the URL for this file in ELMS.
-
