@@ -23,7 +23,10 @@ Write code to calculate the mean and standard deviation of the danceability scor
 
 ```{r}
 glimpse(spotify)
-
+spotify %>% 
+summarize (mean(danceability), sd(danceability))
+#mean: 0.67...
+#sd: 0.16...
 ```
 
 ### Task 4: Create a histogram of the danceability scores
