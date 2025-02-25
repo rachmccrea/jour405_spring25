@@ -5,23 +5,67 @@ title: "Sampling"
 Follow along with the demo to learn how to sample data from a population using R and the Tidyverse. You should get started by loading the tidyverse in a new R block.
 
 ### Task 1: Load the tidyverse
+```{r}
+library(tidyverse)
+```
 
 
 ### Task 2: Load 1,000 rows of data with the ages of people from 18-80
+```{r}
+#time to generate some data 
+set.seed(42) # setting seed for reproducibility 
+population <- tibble(
+  age = sample(18:80, 1000, replace = TRUE)
+)
+#view the first few rows 
+head(population)
+```
+
 
 
 ### Task 3: Sample 100 rows of data from the dataset
 
+```{r}
+sample_100 <- population %>% 
+  sample_n(100) 
+```
+
+```{r}
+sample_50 <- population %>% 
+  sample_n(50) 
+```
+
+```{r}
+sample_10 <- population %>% 
+  sample_n(10) 
+
 
 ### Task 4: Calculate the mean age and standard deviation of the sample
 
+```{r}
+sample_100 %>% summarize(mean = mean(age), sd = sd(age))
+sample_50 %>% summarize(mean = mean(age), sd = sd(age))
+sample_10 %>% summarize(mean = mean(age), sd = sd(age))
+
+```
+
 
 ### Task 5: Calculate the mean age and standard deviation of the population
+```{r}
+population %>% summarize(mean = mean(age), sd = sd(age))
+```
+
 
 
 ### Task 6: Compare the sample and population statistics
 
 Compare the means and standard deviations. Are they similar? Go back and re-run the sampling and statistics calculations with a smaller sample size. How do the results change?
+
+
+The means and standard deviations for the population and sample 100 were pretty similar for me. Sample 50 was ok too, but sample 10 was super not representative of the population. 
+
+
+```
 
 
 
