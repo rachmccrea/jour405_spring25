@@ -1,0 +1,36 @@
+---
+title: "405 notes 2/25"
+output: html_notebook
+---
+
+clarification on skew -- when data is skewed, it's skewed towards where the data is all bunched up 
+  a right-skewed histogram has a tail to the left, and vice versa 
+  don't use "skewed data" in stories bc most people don't actually know what that means. 
+    explain it in a way that people will understand, not using "skewed" 
+
+histogram bars -- use "binwidth" 
+  0.05 is a good binwidth, so is 0.1
+  0.5 is not a good width -- go for smaller. 
+  putting things in bins, want the bins to be fairly small
+
+pick good, balanced, representative samples when surveying 
+  50 people should not be speaking for all Syracuse students. it's too small, and it was an imbalanced sample 
+  there's a right way to do samples. it takes effort, time, sometimes $
+  paying people to take a survey is pretty effective, but there are other methods used in the same sample. 
+  surveying/running polls is hard! but you can do it right! and you can trust it when it's done right!
+  you gotta read the methodology on surveys though 
+
+central limit theorem = the sampling distribution of the mean of any independent, random variable will be normal or nearly normal if the sample size is large enough
+  so if we take enough samples and they're big enough, the proportions will be normally distributed around    the actual proportion of the population
+
+DO NOT report on a poll if it has no methodology 
+
+Always read the appendix of surveys and polls and stuff - that's how you figure out how they did it. 
+
+
+
+
+
+
+
+

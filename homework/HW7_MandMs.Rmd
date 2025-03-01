@@ -6,26 +6,61 @@ In this assignment, you'll be picking up where you left off with the M&Ms activi
 
 ### Task 1: Load the tidyverse
 
+```{r}
+library(tidyverse)
+```
 
 ### Task 2: Load the M&Ms dataset from https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/mandms.csv
+```{r}
+mmstats <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/mandms.csv")
+```
+```{r}
+glimpse(mmstats)
+```
 
 
-### Task 3: Sample 5 rows of data from the dataset
 
 
-### Task 4: Calculate the mean age and standard deviation of the sample, using either the blue or white number of M&Ms
+### Task 3: Sample 5 rows of data from the dataset, and then sample 10 rows, saving each to separate dataframes called sample5 and sample10.
+
+```{r}
+sample5 <- mmstats %>% 
+  sample_n(5)
+sample10 <- mmstats %>% 
+  sample_n(10)
+```
 
 
-### Task 5: Calculate the mean age and standard deviation of the population, using the same measure as in Task 4
+### Task 4: Calculate the mean and standard deviation of the samples, using one of the colors.
+```{r}
+sample5 %>% summarize(mean = mean(red), sd = sd(red))
+sample10 %>% summarize(mean = mean(red), sd = sd(red))
+#sample5 red: mean = 70.8, sd = 14.23728 
+#sample10 red: mean = 78.5, sd = 20.09007
+#yikes
+```
+
+
+### Task 5: Calculate the mean and standard deviation of the population, using the same color as Task 4
+```{r}
+mmstats %>% 
+  summarize(mean = mean(red), sd = sd(red))
+#population red: mean = 72.98, sd = 16.45808
+```
 
 
 ### Task 6: Compare the sample and population statistics
 
-Compare the two sets of means and standard deviations. Are they similar?
+Compare the three sets of means and standard deviations. Are they similar?
+
+The mean and standard deviation of red in the population was 72.98 and 16.46. The sample of ten wasn't accurate because it had a standard deviation of 20 and a mean of 78. The sample of 5 also wasn't accurate because it predicted a mean of 70 (closer than 78) and a standard deviation of about 14 (closer than 20!). Weird that the smaller sample got closer to the actual population than the larger sample.  
 
 ### Task 7: Describe the results
 
 Write a few sentences about what you found in the data. What does this tell you about the M&Ms dataset and about the act of random sampling?
+
+The samples I took weren't super accurate compared to the actual mean and standard deviation of the population. I think that means I wasn't taking large enough samples, or that sometimes random sampling can get you weird data because there's always the chance of getting a sample that isn't super representative. I think it also means there's a pretty high amount of variability in the m&ms dataset, the standard deviation seems fairly high. 
+
 
 
 When finished, save your work, switch to GitHub Desktop, then add, commit and push your changes to GitHub and submit the URL of the notebook in ELMS.
