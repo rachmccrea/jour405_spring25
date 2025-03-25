@@ -1,0 +1,204 @@
+---
+title: "Home Values After Transit Line"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+library(tidyverse)
+#scipen = 999 is turning off scientific notation
+```
+
+## Measuring the Impact of Transit on Housing Prices
+
+Local officials have claimed that a new light rail line has increased property values in a local neighborhood.
+
+Before the transit line opened, homes in that neighborhood sold for an average of $285,000, with a standard deviation of $32,000.
+
+Since the extension opened, your news team collected sales data from 14 recent home sales in the neighborhood:
+$297,000, $305,000, $292,000, $318,000, $290,000, $311,000, $299,000, $325,000, $302,000, $288,000, $307,000, $315,000, $320,000, $294,000
+
+As a journalist, you need to determine: **Is there statistical evidence that the transit line has actually increased home values?**
+#can we attribute any change to the transit line? are there other possibilities? 
+#our job: find out if they've increased, and if we can attribute that to the light rail 
+
+Follow along, running the code when directed. If you have questions, ask either in class or put them just below the section you have a question about.
+
+## Task 1: Organize your data
+
+```{r}
+# Known information about home values before the transit line
+prior_mean <- 285000  # average home value
+prior_sd <- 32000     # standard deviation
+
+# Home sale prices after the transit line opened (14 homes)
+new_prices <- c(297000, 305000, 292000, 318000, 290000, 311000, 299000, 
+                325000, 302000, 288000, 307000, 315000, 320000, 294000)
+#list (r calls it a vector)
+
+# Create a journalist-friendly dataset
+home_data <- tibble(
+  sale_id = 1:14,
+  sale_price = new_prices
+)
+#dataframe!!
+
+# View the data
+home_data
+```
+
+## Task 2: Calculate key statistics
+
+```{r}
+# Calculate statistics on the new home price data
+new_stats <- home_data |> 
+  summarise(
+    mean = mean(sale_price),
+    sd = sd(sale_price),
+    n = n(), #how many there area
+    min = min(sale_price),
+    max = max(sale_price)
+  )
+
+new_stats
+#turning individual data into aggregate data 
+#new mean = 304.5K 
+#old mean = 285k 
+#SD = 12k ish so most sales come within standard deviation 
+```
+
+## Task 3: Make a chart
+
+```{r}
+# Function to format currency values
+dollar_format <- function(x) {
+  paste0("$", format(x/1000, big.mark=","), "K")
+}
+
+# Create a visualization of home prices with reference to previous average
+ggplot(home_data, aes(x = reorder(sale_id, sale_price), y = sale_price)) +
+  geom_col(fill = "seagreen", alpha = 0.8) +
+  geom_hline(yintercept = prior_mean, color = "darkred", size = 1, linetype = "dashed") +
+  annotate("text", x = 3, y = prior_mean - 8000, 
+           label = "Previous Average ($285K)", hjust = 0, fontface = "bold", color = "darkred") +
+  scale_y_continuous(labels = dollar_format) +
+  labs(
+    title = "Home Sales After Transit Line",
+    subtitle = "Horizontal line shows previous neighborhood average of $285,000",
+    x = "Recent Home Sales",
+    y = "Sale Price",
+    caption = "Source: County Property Records"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+#every new home sale is above previous average --> looks like prices have def gone up 
+```
+
+## Task 4: Perform a hypothesis test
+
+This is where we formally test the officials' claim that the transit line has increased home values.
+
+**Hypotheses:** T TEST!!!!!
+- H₀: μ ≤ $285,000 (The transit line has not increased home values)
+- H₁: μ > $285,000 (The transit line has increased home values)
+
+```{r}
+#SOMETIMES THINGS JUST HAPPEN. exhibit a: umd basketball in 2025 march madness. 
+#Is it random chance that all these houses can go up by chance? 
+#here, you're testing the null hypothesis: that the transit line has not increased home values
+#mostly, we're ruling one thing out. If we can rule out that the transit line has Not increased home values, we kinda have to accept that the line Has increase home values 
+#T Test -- either test 1 or 2 things. we're testing line's effect on home values 
+
+# Perform a one-sample t-test
+# Since we want to know if home values increased, we use a one-sided test (alternative = "greater")
+t_test_result <- t.test(
+  home_data$sale_price,
+  mu = prior_mean,
+  alternative = "greater"
+)
+#take sale prices and compare them to prior mean 
+
+# Display the results
+t_test_result
+
+#df = degrees of freedom = number of actual rows in dataframe -1. means 'how many possible variations there are, how complicated it can get' we want lots of data 
+#p value = probability that what we're seeing is in fact random chance. if it's really low, we can say this isn't random. 
+#0.05 is the standard that people use for p values (magic line we've all agreed on)
+#our p value is low as hell 
+#confidence interval: high degree of confidence that the true mean is somewhere around here 
+```
+
+## Task 5: Interpreting the results for your story
+
+```{r}
+# Extract the p-value
+p_value <- t_test_result$p.value
+
+# Calculate the 95% confidence interval
+ci <- t.test(home_data$sale_price)$conf.int
+
+#19 times out of 20 this can happen 
+
+# Format and display the confidence interval in a readable way
+ci_formatted <- tibble(
+  `Lower bound` = dollar_format(ci[1]),
+  `Upper bound` = dollar_format(ci[2]),
+  `Confidence level` = "95%"
+)
+
+# Display as a nice table
+ci_formatted
+
+# Set our significance level
+alpha <- 0.05
+#baseline p value
+
+# Compare and make a decision
+if(p_value < alpha) {
+  conclusion <- "The data provides statistical evidence supporting the claim that the transit line has increased home values."
+} else {
+  conclusion <- "The data does not provide strong statistical evidence that the transit line has increased home values."
+}
+
+# Create a tibble to display the key statistics for your story
+story_stats <- tibble(
+  `Previous average` = dollar_format(prior_mean),
+  `New average` = dollar_format(mean(new_prices)),
+  `Increase` = dollar_format(mean(new_prices) - prior_mean),
+  `Percent change` = paste0(round(((mean(new_prices) - prior_mean) / prior_mean) * 100, 1), "%"),
+  `p-value` = p_value,
+  `Statistically significant?` = if_else(p_value < alpha, "Yes", "No")
+)
+
+# Display the key statistics
+story_stats
+
+print(conclusion)
+
+#THIS DOESN'T PROVE THAT THE TRANSIT LINE IS THE REASON, BUT WE CAN RULE OUT THE NULL HYPOTHESIS. WE CAN SAY THERE SEEMS TO BE SOME RELATIONSHIP THERE. WE CAN'T PROVE THIS, WE CAN ONLY REJECT THE OPPOSITE. 
+
+#statistical significance = we can prove that this thing didn't happen. This drug didn't not prevent this disease. We can reject the claim that this drug wasn't effective. 
+
+```
+
+## Task 6: What's the story?
+
+After disucssion the results, each person writes a couple of sentences for the top of a story about local officials' claims on the impact of the transit line and what the data says. Remember that there are lots of possible reasons that could influence the price of a home. Make your sentences newsy.
+
+
+Home prices have risen in NEIGHBORHOOD X since a new transit line was introduced through the area, local officials say. While it is impossible to prove that the announcement of the project is directly responsible for a rise in home prices, an analysis of home sales does indicate an increase since then.
+
+Before the project was introduced, the mean home price in the area was $285,000. New home sales since then have increased by an average of about $19,500. 
+
+I DON'T KNOW IF THIS IS HOW I SHOULD WRITE IT. 
+
+
+
+
+
+

@@ -27,6 +27,11 @@ DO NOT report on a poll if it has no methodology
 
 Always read the appendix of surveys and polls and stuff - that's how you figure out how they did it. 
 
+If you get sent poll results and they have no sample size or margin of error, deposit the poll in the trash and ask for methodology 
+MoE = 1/√n × 100
+
+
+
 
 
 
