@@ -31,6 +31,7 @@ If you get sent poll results and they have no sample size or margin of error, de
 MoE = 1/√n × 100
 
 
+unfortunately, you can torture the daya to say anything you want. if you start with an endpoint instead of a question, you can probably get the data to hit that endpoint. "i want to find a publishable result" vs "i want to find the answer" this is journalism's problem when researchers bring their reports to you. DOES X ACTUALLY CAUSE Y, or are there alternate explanations? 
 
 
 
