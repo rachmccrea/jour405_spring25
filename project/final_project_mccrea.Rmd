@@ -1,0 +1,79 @@
+---
+title: "final_project_mccrea"
+author: "Rachel McCrea"
+date: "2025-04-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(tidycensus)
+library(knitr)
+```
+
+Hospital data 
+```{r}
+hospitals <- read_csv("md_hospitals_state_data.csv")
+
+hospitals %>% 
+  group_by(County) %>% 
+  summarize(count = n())
+```
+This CSV has a list of hospitals in MD with their name, county, address, and type. My goal with this data is to have each county be a column including the number of hospitals, county population, and per capita rate of hospitals. Would love some guidance on where to go from here with this this dataset -- I started by using group_by and summarize to figure out how many hospitals per county. Next, I think I'd try saving that as a new dataset and then joining it with population data. I'm gonna try that at the bottom of this notebook once I load population data. 
+
+Population data
+
+```{r}
+census_api_key("738bbf398565b3bd6d468669a0ef4374f13c150b", overwrite=TRUE)
+```
+```{r}
+population <- get_decennial(geography = "county", 
+                            variable = "P1_001N", 
+                            state = "MD",
+                            year = 2020, 
+                            sumfile = "pl")
+#did a tidycensus lab a couple weeks ago in Ryan Little's data class. 
+#used walker-data.com to figure out how to pull decennial census
+#used chatgpt when i was having trouble finding the variable to pull total population per county. told it what i was trying to do, and that i couldn't find the variable. it gave me the variable and told me how to structure my code, specifiying the state and putting sumfile = pl. 
+```
+This dataset has census data listing the total population of each MD county. I plan to use it to calculate the hospital rate per capita, next step is to modify the hospital csv and join it with this and start doing some serious coding. 
+
+Per capita personal income data 
+```{r}
+income <- read_csv("md_pcpi_bea.csv")
+#did some editing in excel - changed the row names, got rid of the header, deleted data from other states, turned it into a csv. '
+```
+This is per capita personal income data by county from 2021, 2022, and 2023. The 2023 data is probably going to be the most relevant to my project. I expect to spend most of the time working with the 2023_PCPI column. I wish it also had a median income measure, I think that would protect against outliers messing with the data. 
+
+
+Life expectancy data 
+```{r}
+life_expectancy <- read_csv("life_expectancy_md.csv")
+```
+
+
+This csv is just life expectancy by county, plus a row that has life expectancy for the whole state. This came from a much larger excel spreadsheet also saved to my project folder. 
+
+TRYING TO JOIN HOSPITAL AND POPULATION DATA (need help)
+```{r}
+hospitals <- read_csv("md_hospitals_state_data.csv")
+
+hospital_by_county <- hospitals %>% 
+  group_by(County) %>% 
+  summarize(count = n())
+
+write_csv(hospital_by_county, file = "hospital_by_county.csv")
+#learned how to do that ^ in data journalism this week 
+
+#cleaned up county and row names in excel
+
+hospital_by_county <- read_csv("hospital_by_county.csv")
+
+joined_hospital_population <- hospital_by_county %>% 
+  right_join(population, join_by(county==NAME))
+#learned how to join in data class. None of the joins I tried preserved both the number of hospitals and the population -- it was either one or the other and I'm stuck. 
+```
+
+
