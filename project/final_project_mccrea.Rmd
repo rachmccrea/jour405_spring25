@@ -5,6 +5,77 @@ date: "2025-04-19"
 output: html_document
 ---
 
+TESTS I COULD RUN: 
+
+From my own brain: 
+- Calculate the hospitals per 1000 rate
+- Data visualization of hospitals per capitia, plus their locations (map). Not a test but still useful.
+- Chi-square test - I think the data I have is applicable
+- ANOVA test - I think the data I have is applicable 
+- Would use both chi-square and ANOVA to test my hypothesis: that wealther counties have a higher hospital rate.
+
+When I asked terp ai (conversation copy-pasted below), it told me to run the correlation coefficient (should've thought of that) and a linear regression. Both sounds good to me, so I'll probably use them too. 
+
+Terp AI conversation: 
+
+You  
+
+Hey dude. I hope your day is going well. I'm working with R and the tidyverse to analyze some data: the number of hospitals per capita in Maryland counties and the median income of those counties. Any idea what kinds of tests I could run for this? I've already thought about chi-square and anova tests.
+Logo
+GPT 4o-mini - UMD3  
+
+Hello! I'm glad to assist you with your data analysis in R and the tidyverse. Your project sounds interesting! Here are some statistical tests and methods you could consider for analyzing the relationship between the number of hospitals per capita and the median income of Maryland counties:
+
+1. Correlation Analysis
+Pearson Correlation Coefficient: This test measures the strength and direction of the linear relationship between two continuous variables (e.g., hospitals per capita and median income).
+Spearman's Rank Correlation: If your data is not normally distributed, this non-parametric test can assess the relationship between the two variables.
+2. Regression Analysis
+Linear Regression: You can model the relationship between the number of hospitals per capita (dependent variable) and median income (independent variable). This will help you understand how changes in income relate to the number of hospitals.
+Multiple Regression: If you have additional variables (e.g., population density, urban vs. rural classification), you could include them to see how they affect the relationship.
+3. ANOVA (Analysis of Variance)
+One-Way ANOVA: If you categorize the counties based on income brackets (e.g., low, medium, high), you can use ANOVA to test if there are significant differences in the number of hospitals per capita across these groups.
+4. Chi-Square Test
+This test is more suitable for categorical data. If you can categorize your counties based on the number of hospitals (e.g., low, medium, high) and median income, you can explore the association between these categories.
+5. Non-parametric Tests
+If your data does not meet the assumptions required for parametric tests (e.g., normality), you might want to consider non-parametric alternatives like the Kruskal-Wallis test for comparing more than two groups.
+6. Visualization
+Scatter Plots: Visualize the relationship between hospitals per capita and median income.
+Box Plots: If using ANOVA, box plots can help visualize the distribution of hospitals per capita across different income categories.
+Example Code in R
+Here’s a simple example of how you might perform a linear regression in R:
+
+R
+# Load necessary libraries
+library(tidyverse)
+
+# Assuming your data frame is called 'data'
+# with columns 'hospitals_per_capita' and 'median_income'
+
+# Linear regression
+model <- lm(hospitals_per_capita ~ median_income, data = data)
+summary(model)
+
+# Visualize the relationship
+ggplot(data, aes(x = median_income, y = hospitals_per_capita)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Hospitals per Capita vs. Median Income",
+       x = "Median Income",
+       y = "Hospitals per Capita")
+Conclusion
+These tests will help you understand the relationship between hospitals per capita and median income. Make sure to check the assumptions of each test you choose to use. If you need further assistance or specific examples, feel free to ask!
+
+You  
+
+Thanks!
+Logo
+GPT 4o-mini - UMD3  
+
+You're very welcome! If you have any more questions or need further assistance with your analysis, feel free to ask. Good luck with your project, and have a great day! 😊
+
+
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
