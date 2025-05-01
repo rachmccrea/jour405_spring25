@@ -4,6 +4,270 @@ author: "Rachel McCrea"
 date: "2025-04-19"
 output: html_document
 ---
+Trying to run some tests! 
+
+Feedback: 
+- add GEOID to hospital_by_county using value from population data, join by GEOID 
+- get rid of statewide rows in data. 
+
+Loading in the data again (this is copied from the bottom of the notebook, which has notes on my AI use and all the stuff we needed for one of the earlier project assignments): 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(tidycensus)
+library(knitr)
+```
+```{r}
+hospitals <- read_csv("md_hospitals_state_data.csv")
+hospital_by_county <- read_csv("hospital_by_county.csv")
+census_api_key("738bbf398565b3bd6d468669a0ef4374f13c150b", overwrite=TRUE)
+population <- get_decennial(geography = "county", 
+                            variable = "P1_001N", 
+                            state = "MD",
+                            year = 2020, 
+                            sumfile = "pl")
+income <- read_csv("md_pcpi_bea.csv")
+```
+Adding GEOID to hospital_by_county using population, going in thru excel and making those changes. 
+Ended up putting in the GEOID numbers by hand, which introduces the risk of human error but led to me realizing that Queen Anne's County doesn't have a hospital. Looks like they have an emergency center run through UMD eastern shore, though. 
+
+Loading updated hospital_by_county data
+
+```{r}
+hospital_by_county <- read_csv("hospital_by_county.csv")
+```
+Need to convert one of them from chr to dbl 
+
+```{r}
+glimpse(population)
+#ah it's population. 
+
+population <- population %>% 
+  mutate(GEOID = as.numeric(GEOID))
+
+glimpse(population)
+#BAM i did that from MEMORY let's GO
+```
+
+Now I try to join them
+```{r}
+joined_hospital_population <- hospital_by_county %>% 
+  right_join(population, join_by(GEOID==GEOID))
+#YAY IT WORKED 
+```
+Only 22 counties/jurisdictions in MD have a hospital 
+wait why the hell are there 25 jurisdictions in here wtf
+ahhhh i see. i fucked it up and the counties don't match. Let me try to fix that. 
+It's only garrett and washington that have the mismatch (population data for garrett repeated in the Washington row). Looks like I put in the Garrett GEOID instead of the Washington one. Gonna go back into excel, fix, load it again, and join again. 
+```{r}
+hospital_by_county <- read_csv("hospital_by_county.csv")
+
+joined_hospital_population <- hospital_by_county %>% 
+  right_join(population, join_by(GEOID==GEOID))
+
+view(joined_hospital_population)
+#WAHOO!! 
+
+#Gonna write it as a .csv, load it in excel, change the column names, rearrange the columns, and read it back in. 
+write_csv(joined_hospital_population, file = "joined_hospital_population.csv")
+joined_hospital_population <- read_csv("joined_hospital_population.csv")
+```
+Ok, so now I know that 2 counties don't have hospitals, and I have the number of hospitals per county and county population in the same dataset. Yay!
+
+Now I want to join number of hospitals with income. After that, I'll join all three. That'll leave me with 3 good datasets to work with: hospitals+population, hospitals+income, and hospitals+population+income. 
+
+
+```{r}
+#step 1: write income csv to folder, remove maryland row, add GEOID, and read it back in. 
+
+write_csv(income, file = "income.csv")
+income_per_capita <- read_csv("income.csv")
+
+#step 2: join to hospital_by_county 
+
+joined_hospital_income <- hospital_by_county %>% 
+  right_join(income_per_capita, join_by(GEOID==GEOID))
+
+#ugh i messed up frederick's GEOID let's edit in excel and try again. 
+
+income_per_capita <- read_csv("income.csv")
+
+joined_hospital_income <- hospital_by_county %>% 
+  right_join(income_per_capita, join_by(GEOID==GEOID))
+
+#ok there we go. 
+```
+
+
+Now we join all three! 
+
+```{r}
+joined_all <- joined_hospital_population %>% 
+  right_join(income_per_capita, join_by (GEOID==GEOID))
+
+#cutting out the columns we don't need right now 
+
+#joined_all_simplified <- joined_all %>% 
+  #select(GEOID, number_of_hospitals, population, COUNTY, 2023_PCPI, RANK_PCPI_2023)
+#^^this didn't work so I'm commenting it out. 
+
+#aaaand i need to change some column names. going back to excel. 
+
+write_csv(joined_all, file = "joined_all.csv")
+joined_all <- read_csv("joined_all.csv")
+
+#let's try again. 
+
+joined_all_simplified <- joined_all %>% 
+  select(GEOID, number_of_hospitals, population, COUNTY, PCPI_2023, RANK_PCPI_2023)
+#YAY
+```
+
+Ok now it's time to start running some tests. 
+First step: linear regression with population and hospital numbers. I feel like that's a good thing to do right off the bat to get some scatterplots and p-values and residuals. 
+I'm gonna do basically the same thing we did in class: copy in the ggplot code to make a scatterplot, then copy in the model code to run the regression. 
+
+```{r}
+joined_hospital_population |>
+  ggplot(aes(x = population, y = number_of_hospitals)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "county population", y = "number of hospitals", title = "number of hospitals per county by population")
+```
+Looks like some counties with high populations have a high number of hospitals, but then there's that outlier with like 15. who the hell is that. 
+It's Baltimore City. Interesting. 
+There's also a county with a relatively high population ond only a couple hospitals. Some with much lower populations have 3 instead of 2. 
+
+
+```{r}
+model <- lm(number_of_hospitals ~ population, data = joined_hospital_population)
+
+summary(model)
+```
+Ok looking through this: 
+P-value looks good (had to google what a statistically significant p-value was, forgot it was 0.05)
+Adjusted R-squared is 0.42...does that mean it accounts for 42% or 0.42%? Had to google this too, looks like the closer it is to 1 the better. Sooooo it's looking like population Kinda But Not Totally affects the number of hospitals in a county so far. 
+Min = -3
+Max = 9 
+Not liking those residuals. 
+My interpretation: population explains some, but not all, of the number of hospitals in a county. 
+
+
+Checking to see whether I get a different result if I switch the column order in the code: 
+
+```{r}
+model <- lm(population ~ number_of_hospitals, data = joined_hospital_population)
+
+summary(model)
+```
+I think I probably made the right call with the other model. this one is a little confusing -- the big population numbers are hard and the p-value and adjusted r squared are the same. 
+
+
+Now I'm gonna run the same thing for hospitals and income. 
+
+```{r}
+#changing column names in excel and reading it back in 
+write_csv(joined_hospital_income, file = "joined_hospital_income.csv")
+joined_hospital_income <- read_csv("joined_hospital_income.csv")
+
+joined_hospital_income |>
+  ggplot(aes(x = PCPI_2023, y = number_of_hospitals)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "per capita personal income", y = "number of hospitals", title = "number of hospitals per county by per capital personal income ")
+```
+
+
+That doesn't look like much of anything! Maybe a slight positive slope, but that's it. 
+
+Running the linear regression model!
+
+```{r}
+model <- lm(number_of_hospitals ~ PCPI_2023, data = joined_hospital_income)
+
+summary(model)
+
+```
+P-value is 0.8 and adjusted r^2 is -0.0437. Max residual is huge. Looks like I can disregard this. 
+
+But I'm gonna try the same thing using rank_pcpi instead of pcpi_2023 to see how the richest and poorest counties compare. See if there's anything there. 
+
+
+```{r}
+joined_hospital_income |>
+  ggplot(aes(x = RANK_PCPI_2023, y = number_of_hospitals)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "per capita personal income", y = "number of hospitals", title = "number of hospitals per county by per capital personal income ")
+```
+
+
+```{r}
+model <- lm(number_of_hospitals ~ RANK_PCPI_2023, data = joined_hospital_income)
+
+summary(model)
+
+```
+
+Once again, neither of these tests seems to point to a relationship between county wealth and number of hospitals. 
+
+Once we learn multiple regressions next week, I might try to run that. 
+
+TIME TO TRY ANOTHER THING. 
+
+I'm interested in the distribution of hospitals, since it looks like the 2 counties without any are both on the Eastern Shore. I want to make a chloropleth map, but don't have geometry info for the counties or anything. I'll try something else. 
+
+look at distribution of hospitals and distribution of population for eastern shore and western maryland -- does the ES have the same percentage of both population and hospitals? 
+
+```{r}
+joined_hospital_population <- joined_hospital_population %>% 
+  mutate(shore = case_when(
+    NAME  == "Caroline County, Maryland" ~ "shore",
+    NAME == "Cecil County, Maryland" ~ "shore", 
+    NAME == "Dorchester County, Maryland" ~ "shore", 
+    NAME == "Kent County, Maryland" ~ "shore", 
+    NAME == "Queen Anne's County, Maryland" ~ "shore", 
+    NAME == "Somerset County, Maryland" ~ "shore", 
+    NAME == "Talbot County, Maryland" ~ "shore", 
+    NAME == "Wicomico County, Maryland" ~ "shore", 
+    NAME == "Worcester County, Maryland" ~ "shore", 
+    TRUE ~ "not_shore"
+  ))
+```
+
+```{r}
+#joined_hospital_population %>% 
+  #group_by(shore) %>% 
+  #summarize(hospitals = sum(number_of_hospitals))
+
+#"shore" is coming up NA so I'm going to put "0" in for "NA" in excel for the two counties missing hospitals. is that allowed? also putting the county names in where they say "NA." 
+
+write_csv(joined_hospital_population, file = "joined_hospital_population.csv")
+joined_hospital_population <- read_csv("joined_hospital_population.csv")
+
+#trying again 
+joined_hospital_population%>% 
+  group_by(shore) %>% 
+  summarize(hospitals = sum(number_of_hospitals))
+#shore has 11 hospitals, not_shore has 53. 
+#population now 
+joined_hospital_population%>% 
+  group_by(shore) %>% 
+  summarize(hospitals = sum(number_of_hospitals), population = (sum(population)))
+
+shore_population_stats <- joined_hospital_population%>% 
+  group_by(shore) %>% 
+  summarize(hospitals = sum(number_of_hospitals), population = (sum(population)))
+
+shore <- shore_population_stats %>% 
+  mutate(total_population = sum(population), total_hospitals = sum(hospitals)) %>% 
+  mutate(pct_population = population/total_population, pct_hospitals = hospitals/total_hospitals) %>% 
+  mutate(hospitals_per_1000 = hospitals/population * 1000)
+
+```
+If I did this right, that means the shore has 7% of MD's population but 17% of its hospitals. Non-shore counties have ~92% of the population and 82% of hospitals. Looks like the shore has comparatively more hospitals than the rest of maryland, even though a couple counties don't have one.  
+
 
 TESTS I COULD RUN: 
 

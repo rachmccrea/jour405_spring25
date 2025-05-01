@@ -1,0 +1,25 @@
+GEOID,county,number_of_hospitals,population,NAME,variable,shore
+24001,ALLEGANY,2,68106,"Allegany County, Maryland",P1_001N,not_shore
+24003,ANNE_ARUNDEL,2,588261,"Anne Arundel County, Maryland",P1_001N,not_shore
+24510,BALTIMORE_CITY,15,585708,"Baltimore city, Maryland",P1_001N,not_shore
+24005,BALTIMORE_COUNTY,6,854535,"Baltimore County, Maryland",P1_001N,not_shore
+24009,CALVERT,1,92783,"Calvert County, Maryland",P1_001N,not_shore
+24013,CARROLL,2,172891,"Carroll County, Maryland",P1_001N,not_shore
+24015,CECIL,1,103725,"Cecil County, Maryland",P1_001N,shore
+24017,CHARLES,1,166617,"Charles County, Maryland",P1_001N,not_shore
+24019,DORCHESTER,3,32531,"Dorchester County, Maryland",P1_001N,shore
+24021,FREDERICK,1,271717,"Frederick County, Maryland",P1_001N,not_shore
+24023,GARRETT,1,28806,"Garrett County, Maryland",P1_001N,not_shore
+24025,HARFORD,2,260924,"Harford County, Maryland",P1_001N,not_shore
+24027,HOWARD,2,332317,"Howard County, Maryland",P1_001N,not_shore
+24029,KENT,1,19198,"Kent County, Maryland",P1_001N,shore
+24031,MONTGOMERY,8,1062061,"Montgomery County, Maryland",P1_001N,not_shore
+24033,PRINCE_GEORGES,6,967201,"Prince George's County, Maryland",P1_001N,not_shore
+24037,SAINT_MARYS,1,113777,"St. Mary's County, Maryland",P1_001N,not_shore
+24039,SOMERSET,1,24620,"Somerset County, Maryland",P1_001N,shore
+24041,TALBOT,1,37526,"Talbot County, Maryland",P1_001N,shore
+24043,WASHINGTON,3,154705,"Washington County, Maryland",P1_001N,not_shore
+24045,WICOMICO,3,103588,"Wicomico County, Maryland",P1_001N,shore
+24047,WORCESTER,1,52460,"Worcester County, Maryland",P1_001N,shore
+24011,CAROLINE,0,33293,"Caroline County, Maryland",P1_001N,shore
+24035,QUEEN_ANNES,0,49874,"Queen Anne's County, Maryland",P1_001N,shore
