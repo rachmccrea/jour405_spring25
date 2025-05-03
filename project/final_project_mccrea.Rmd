@@ -10,7 +10,7 @@ Feedback:
 - add GEOID to hospital_by_county using value from population data, join by GEOID 
 - get rid of statewide rows in data. 
 
-Loading in the data again (this is copied from the bottom of the notebook, which has notes on my AI use and all the stuff we needed for one of the earlier project assignments): 
+Loading in the data again (this is copied from the bottom of the notebook, which has notes on what I got help from AI on, and all the stuff we needed for one of the earlier project assignments): 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
@@ -70,7 +70,7 @@ view(joined_hospital_population)
 #WAHOO!! 
 
 #Gonna write it as a .csv, load it in excel, change the column names, rearrange the columns, and read it back in. 
-write_csv(joined_hospital_population, file = "joined_hospital_population.csv")
+#deleted write_csv because it wrecked my changes on run-through. 
 joined_hospital_population <- read_csv("joined_hospital_population.csv")
 ```
 Ok, so now I know that 2 counties don't have hospitals, and I have the number of hospitals per county and county population in the same dataset. Yay!
@@ -80,21 +80,17 @@ Now I want to join number of hospitals with income. After that, I'll join all th
 
 ```{r}
 #step 1: write income csv to folder, remove maryland row, add GEOID, and read it back in. 
-
-write_csv(income, file = "income.csv")
+#deleted write_csv() because when it ran it would delete the GEOIDs I added. 
 income_per_capita <- read_csv("income.csv")
 
 #step 2: join to hospital_by_county 
 
 joined_hospital_income <- hospital_by_county %>% 
-  right_join(income_per_capita, join_by(GEOID==GEOID))
+  right_join(income_per_capita, join_by("GEOID"=="GEOID"))
+#consulted terpAI because this wasn't running, and then realized that when I did the run-all before turning this in I destroyed the version of income.csv that had the GEOIDs. went in, fixed it, got rid of the write_csv command. 
 
-#ugh i messed up frederick's GEOID let's edit in excel and try again. 
-
-income_per_capita <- read_csv("income.csv")
-
-joined_hospital_income <- hospital_by_county %>% 
-  right_join(income_per_capita, join_by(GEOID==GEOID))
+read_csv("joined_hospital_income.csv")
+#had to go into excel and fix the dataset - mixed up baltimore city and county but it should be good to go now. 
 
 #ok there we go. 
 ```
@@ -114,13 +110,14 @@ joined_all <- joined_hospital_population %>%
 
 #aaaand i need to change some column names. going back to excel. 
 
-write_csv(joined_all, file = "joined_all.csv")
+
 joined_all <- read_csv("joined_all.csv")
+#changed some column names in excel, deleted write_csv because it wrecked my changes on my last run-through. 
 
 #let's try again. 
 
 joined_all_simplified <- joined_all %>% 
-  select(GEOID, number_of_hospitals, population, COUNTY, PCPI_2023, RANK_PCPI_2023)
+  select(GEOID, number_of_hospitals, county_population, COUNTY, PCPI_2023, RANK_PCPI_2023)
 #YAY
 ```
 
@@ -130,18 +127,17 @@ I'm gonna do basically the same thing we did in class: copy in the ggplot code t
 
 ```{r}
 joined_hospital_population |>
-  ggplot(aes(x = population, y = number_of_hospitals)) +
+  ggplot(aes(x = county_population, y = number_of_hospitals)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
   labs(x = "county population", y = "number of hospitals", title = "number of hospitals per county by population")
 ```
-Looks like some counties with high populations have a high number of hospitals, but then there's that outlier with like 15. who the hell is that. 
-It's Baltimore City. Interesting. 
+Looks like some counties with high populations have a high number of hospitals, but Baltimore City is an outlier with 15 hospitals. 
 There's also a county with a relatively high population ond only a couple hospitals. Some with much lower populations have 3 instead of 2. 
 
 
 ```{r}
-model <- lm(number_of_hospitals ~ population, data = joined_hospital_population)
+model <- lm(number_of_hospitals ~ county_population, data = joined_hospital_population)
 
 summary(model)
 ```
@@ -157,7 +153,7 @@ My interpretation: population explains some, but not all, of the number of hospi
 Checking to see whether I get a different result if I switch the column order in the code: 
 
 ```{r}
-model <- lm(population ~ number_of_hospitals, data = joined_hospital_population)
+model <- lm(county_population ~ number_of_hospitals, data = joined_hospital_population)
 
 summary(model)
 ```
@@ -168,7 +164,6 @@ Now I'm gonna run the same thing for hospitals and income.
 
 ```{r}
 #changing column names in excel and reading it back in 
-write_csv(joined_hospital_income, file = "joined_hospital_income.csv")
 joined_hospital_income <- read_csv("joined_hospital_income.csv")
 
 joined_hospital_income |>
@@ -243,7 +238,6 @@ joined_hospital_population <- joined_hospital_population %>%
 
 #"shore" is coming up NA so I'm going to put "0" in for "NA" in excel for the two counties missing hospitals. is that allowed? also putting the county names in where they say "NA." 
 
-write_csv(joined_hospital_population, file = "joined_hospital_population.csv")
 joined_hospital_population <- read_csv("joined_hospital_population.csv")
 
 #trying again 
@@ -254,19 +248,25 @@ joined_hospital_population%>%
 #population now 
 joined_hospital_population%>% 
   group_by(shore) %>% 
-  summarize(hospitals = sum(number_of_hospitals), population = (sum(population)))
+  summarize(hospitals = sum(number_of_hospitals), population = (sum(county_population)))
 
-shore_population_stats <- joined_hospital_population%>% 
-  group_by(shore) %>% 
-  summarize(hospitals = sum(number_of_hospitals), population = (sum(population)))
+shore <- joined_hospital_population %>% 
+  mutate(number_of_hospitals = as.numeric(number_of_hospitals)) %>% 
+  mutate(total_population = sum(county_population), total_hospitals = sum(number_of_hospitals)) %>% 
+  mutate(pct_population = county_population/total_population, pct_hospitals = number_of_hospitals/total_hospitals) %>% 
+  mutate(hospitals_per_1000 = number_of_hospitals/county_population * 1000)
+#getting an error message. asking terp ai. 
+#looks like i forgot to change "population" to "county_population" in the last line. 
 
-shore <- shore_population_stats %>% 
-  mutate(total_population = sum(population), total_hospitals = sum(hospitals)) %>% 
-  mutate(pct_population = population/total_population, pct_hospitals = hospitals/total_hospitals) %>% 
-  mutate(hospitals_per_1000 = hospitals/population * 1000)
+  
+glimpse(shore)
 
 ```
 If I did this right, that means the shore has 7% of MD's population but 17% of its hospitals. Non-shore counties have ~92% of the population and 82% of hospitals. Looks like the shore has comparatively more hospitals than the rest of maryland, even though a couple counties don't have one.  
+
+
+
+----------------------------------------------------------------------------------------------------
 
 
 TESTS I COULD RUN: 
