@@ -10,6 +10,8 @@ Feedback:
 - add GEOID to hospital_by_county using value from population data, join by GEOID 
 - get rid of statewide rows in data. 
 
+Link to the AI conversations I had: https://github.com/rachmccrea/jour405_spring25/blob/main/project/Troubleshooting%20right%20join%20error%20in%20R%20with%20GEOID.txt
+
 Loading in the data again (this is copied from the bottom of the notebook, which has notes on what I got help from AI on, and all the stuff we needed for one of the earlier project assignments): 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
