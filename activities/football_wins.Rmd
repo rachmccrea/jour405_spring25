@@ -54,7 +54,7 @@ The coefficients tell us the estimated effect of each independent variable on th
 
 Is this a useful model, based on what you've seen? Why?
 
-I don't think it's a very useful model. It can tell us some useful things about might or might not have some impact on wins, but the residuals and residual standard error are too large to use it to make confident preditions. I wouldn't use it to make predictions for my teams.  
+I don't think it's a very useful model. It can tell us some useful things about what might or might not have some impact on wins, but the residuals and residual standard error are too large to use it to make confident preditions. I wouldn't use it to make predictions for my teams.  
 
 ## Correlation Analysis
 
