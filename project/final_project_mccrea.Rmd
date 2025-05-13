@@ -4,11 +4,40 @@ author: "Rachel McCrea"
 date: "2025-04-19"
 output: html_document
 ---
-Trying to run some tests! 
 
-Feedback: 
-- add GEOID to hospital_by_county using value from population data, join by GEOID 
-- get rid of statewide rows in data. 
+Your final project submission consists of your final_project.rmd notebook and any associated files, including data files (unless you are loading them from the Web). All of them must be in your repository in the project folder unless you've made other arrangements.
+
+Your notebook should run from start to finish without error, unless you intend for me to see a particular error; in that case, you should explain the error you are showing and why. The rubric for the final project is as follows:
+
+Complete submission (all files are in the proper folder) - 10 points
+Notebook runs without error (or with errors explained) - 15 points
+All code blocks are preceded by some narrative explaining what you're doing and why, and followed by an evaluation of the results - 20 points
+Your notebook calculates both descriptive statistics and at least two additional statistical techniques that we've covered this semester - 20 points
+You notebook must have at least one visualization of your choice that shows off a finding or result - 10 points
+Your notebook must include a final section where you draft a story pitch, backed by your analysis. It needs to discuss your main findings, potential problems, and provide a reporting plan - 25 points
+Submit the URL of your notebook in ELMS.
+
+
+DESCRIPTIVE STATS
+- explanation of what I'm doing and why 
+- evaluation after
+TESTS
+- explanation of what I'm doing and why 
+- evaluation after 
+VISUALIZATION
+- a finding or a result 
+STORY PITCH
+- main findings
+- potential problems 
+- reporting plan 
+
+
+What do I have so far? 
+My joining process 
+
+
+
+---------------------------------------- JOINING DATA -------------------------------------------------- 
 
 Link to the AI conversations I had: https://github.com/rachmccrea/jour405_spring25/blob/main/project/Troubleshooting%20right%20join%20error%20in%20R%20with%20GEOID.txt
 
@@ -19,6 +48,10 @@ library(tidyverse)
 library(janitor)
 library(tidycensus)
 library(knitr)
+library(ggplot2)
+library(ggrepel)
+library(sf)
+
 ```
 ```{r}
 hospitals <- read_csv("md_hospitals_state_data.csv")
@@ -31,7 +64,7 @@ population <- get_decennial(geography = "county",
                             sumfile = "pl")
 income <- read_csv("md_pcpi_bea.csv")
 ```
-Adding GEOID to hospital_by_county using population, going in thru excel and making those changes. 
+Added  GEOID to hospital_by_county using population, went in thru excel and making those changes. 
 Ended up putting in the GEOID numbers by hand, which introduces the risk of human error but led to me realizing that Queen Anne's County doesn't have a hospital. Looks like they have an emergency center run through UMD eastern shore, though. 
 
 Loading updated hospital_by_county data
@@ -58,10 +91,8 @@ joined_hospital_population <- hospital_by_county %>%
   right_join(population, join_by(GEOID==GEOID))
 #YAY IT WORKED 
 ```
-Only 22 counties/jurisdictions in MD have a hospital 
-wait why the hell are there 25 jurisdictions in here wtf
-ahhhh i see. i fucked it up and the counties don't match. Let me try to fix that. 
-It's only garrett and washington that have the mismatch (population data for garrett repeated in the Washington row). Looks like I put in the Garrett GEOID instead of the Washington one. Gonna go back into excel, fix, load it again, and join again. 
+Only 22 counties/jurisdictions in MD have a hospital. Found a couple of errors so I exported to excel, fixed them, and read them back in. 
+Note: I ended up having to delete my write_csv() functions because they were blowing up my edits. 
 ```{r}
 hospital_by_county <- read_csv("hospital_by_county.csv")
 
@@ -75,7 +106,7 @@ view(joined_hospital_population)
 #deleted write_csv because it wrecked my changes on run-through. 
 joined_hospital_population <- read_csv("joined_hospital_population.csv")
 ```
-Ok, so now I know that 2 counties don't have hospitals, and I have the number of hospitals per county and county population in the same dataset. Yay!
+Ok, so now I know that 2 counties don't have hospitals, and I have the number of hospitals per county and county population in the same dataset.
 
 Now I want to join number of hospitals with income. After that, I'll join all three. That'll leave me with 3 good datasets to work with: hospitals+population, hospitals+income, and hospitals+population+income. 
 
@@ -123,7 +154,102 @@ joined_all_simplified <- joined_all %>%
 #YAY
 ```
 
-Ok now it's time to start running some tests. 
+
+
+------------------------------ DESCRIPTIVE / SUMMARY STATISTICS ----------------------------------------
+
+Step 1: I want to know the summary stats for number of hospitals in a county so I can see variation across Maryland.
+```{r}
+
+#it was at this point I realized that the # of hospitals for QA and Caroline were NA. Time to change that. 
+
+#write_csv to excel to change it 
+
+write_csv(joined_all, "joined_all_to_fix.csv")
+#making a copy, adding county name and 0 instead of NA to the # of hospitals section, reading back in 
+joined_all_complete <- read_csv("joined_all_complete.csv")
+
+
+joined_all_complete %>% 
+  summarize(mean = mean(number_of_hospitals), min = min(number_of_hospitals), max = max(number_of_hospitals), sd = sd(number_of_hospitals))
+
+#how many hospitals are in MD? 
+joined_all_complete %>% 
+  summarize(sum = sum(number_of_hospitals))
+```
+There are 64 total hospitals in Maryland, according to this data set. The mean number of hospitals in a county is 2.67, which we could round up to 3. The minimum number of hospitals is zero, and the max is 15. The standard deviation is 3.27. 
+From these summary statistics, I can tell there's a lot of variation in the number of hospitals in a county/jurisdiction. 
+
+Step 1.5: I think it's worth doing a data visualization to see how hospitals are distributed across Maryland. 
+
+
+```{r}
+ggplot()+
+  geom_bar(data = joined_all_complete, aes(x = county.x, weight = number_of_hospitals))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #learned how to do that 45 degree thing for my 472 project using  terpai 
+  labs(
+    title="Number of Hospitals Per County in Maryland", 
+    x="County",
+    y="Number of Hospitals"
+  )
+
+```
+This distribution is interesting! Four counties/jurisdictions have way more hospitals than the rest, and they're all in and around Baltimore or DC. Should do the same visualization for population and see if these counties have huge populations. Looks like a lot of counties only have one or two hospitals, and maybe the mean was skewed in my summary statistics by these four hospital-heavy counties. I think it's interesting that Dorchester, Washington, and Wicomico have 3 hospitals each even though they're not big population centers the way the top four counties are. 
+
+Step 2: I want to know summary stats for population so I can see variation. 
+
+```{r}
+joined_all_complete %>% 
+  summarize(mean = mean(county_population), min = min(county_population), max = max(county_population), sd = sd(county_population))
+
+```
+The mean county population is about 257K and the standard deviation is 315K. The minimum populatino is only 19K (I checked, that's Kent) but the max is over a million (Montgomery). Like the number of hospitals in a jurisdiction, there's a lot of variation in county population in Maryland. 
+
+Step 2.5: Data viz for population -- does it match # of hospitals? 
+
+```{r}
+ggplot()+
+  geom_bar(data = joined_all_complete, aes(x = county.x, weight = county_population))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #learned how to do that 45 degree thing for my 472 project using  terpai 
+  labs(
+    title="County Population in Maryland", 
+    x="County",
+    y="Population"
+  )
+
+```
+This is interesting! Montgomery and PG are the two largest population centers in Maryland by a significant amount. Baltimore County also has a large population. However, Baltimore City is almost tied in population with Anne Arundel, but Anne Arundel only has two hospitals and Baltimore has 15. Why are there so many hospitals in Baltimore but comparatively few in Anne Arundel? 
+
+
+Step 3: Summary stats for income so I can see variation -- that's going to be interesting. 
+
+```{r}
+
+joined_all_complete %>% 
+  summarize(mean = mean(PCPI_2023), min = min(PCPI_2023), max = max(PCPI_2023), sd = sd(PCPI_2023))
+
+```
+The mean per capita personal income in 2023 was 69K. The county with the minimum PCPI was Somerset with 37K, and the max was over 100K in Montgomery. 
+
+Step 3.5: Bar chart for county PCPI -- are the counties with the highest number of hospitals the wealthiest? 
+
+```{r}
+
+ggplot()+
+  geom_bar(data = joined_all_complete, aes(x = county.x, weight = PCPI_2023))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #learned how to do that 45 degree thing for my 472 project using  terpai 
+  labs(
+    title="Per Capita Personal Income by County in Maryland ", 
+    x="County",
+    y="2023 per capita personal income"
+  )
+
+```
+
+This doesn't have the huge differences we saw in population and hospital distribution. Montgomery does have the highest PCPI in the state, but PG county has a much lower one and is still one of the counties with the highest population and most hospitals. Neither Baltimore city or county stand out as particularly rich, either, though they're still on the high end. Meanwhile, Talbot and Harford are almost as wealthy as Montgomery but only have one or two hospitals each and pretty small populations. 
+
+
+----------------------------------------- RUNNING TESTS ------------------------------------------------
 First step: linear regression with population and hospital numbers. I feel like that's a good thing to do right off the bat to get some scatterplots and p-values and residuals. 
 I'm gonna do basically the same thing we did in class: copy in the ggplot code to make a scatterplot, then copy in the model code to run the regression. 
 
