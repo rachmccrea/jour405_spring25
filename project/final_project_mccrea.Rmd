@@ -18,6 +18,16 @@ Your notebook must include a final section where you draft a story pitch, backed
 Submit the URL of your notebook in ELMS.
 
 
+I'd also add in some of these:
+
+correlation analysis between population and hospitals, or income and hospitals
+multiple regression! you've got income that you could add, and you could get some other data from the Census API, too.
+If Baltimore City is an outlier here, how much of an outlier is it?
+
+
+And it's not uncommon that our hypotheses are misguided. You absolutely should run a bunch more tests, but you're not admitting defeat here. Knowing that a hypothesis doesn't have evidence to support it is, like a poll, providing some useful information. As a journalist, you've got a couple of options in this kind of situation: one is to find something else to focus on, but another is to consider whether your hypothesis comes from conventional wisdom. If so, it's usually a good service to knock down ideas that people might believe that are wrong.
+
+
 DESCRIPTIVE STATS
 - explanation of what I'm doing and why 
 - evaluation after
@@ -250,7 +260,9 @@ This doesn't have the huge differences we saw in population and hospital distrib
 
 
 ----------------------------------------- RUNNING TESTS ------------------------------------------------
-First step: linear regression with population and hospital numbers. I feel like that's a good thing to do right off the bat to get some scatterplots and p-values and residuals. 
+Step 1: Linear regression models 
+
+Starting with a linear regression with population and hospital numbers. I feel like that's a good thing to do right off the bat to get some scatterplots and p-values and residuals. 
 I'm gonna do basically the same thing we did in class: copy in the ggplot code to make a scatterplot, then copy in the model code to run the regression. 
 
 ```{r}
@@ -335,9 +347,16 @@ summary(model)
 
 Once again, neither of these tests seems to point to a relationship between county wealth and number of hospitals. 
 
-Once we learn multiple regressions next week, I might try to run that. 
+Step 2: Multiple regression!
 
-TIME TO TRY ANOTHER THING. 
+```{r}
+multiple_regression <- lm(number_of_hospitals ~ county_population + PCPI_2023, data = joined_all_complete)
+summary(multiple_regression)
+```
+
+
+
+Step 3: looking at distribution of hospitals again. 
 
 I'm interested in the distribution of hospitals, since it looks like the 2 counties without any are both on the Eastern Shore. I want to make a chloropleth map, but don't have geometry info for the counties or anything. I'll try something else. 
 
