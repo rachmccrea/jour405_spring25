@@ -28,15 +28,15 @@ If Baltimore City is an outlier here, how much of an outlier is it?
 And it's not uncommon that our hypotheses are misguided. You absolutely should run a bunch more tests, but you're not admitting defeat here. Knowing that a hypothesis doesn't have evidence to support it is, like a poll, providing some useful information. As a journalist, you've got a couple of options in this kind of situation: one is to find something else to focus on, but another is to consider whether your hypothesis comes from conventional wisdom. If so, it's usually a good service to knock down ideas that people might believe that are wrong.
 
 
-DESCRIPTIVE STATS
+DESCRIPTIVE STATS DONE
 - explanation of what I'm doing and why 
 - evaluation after
-TESTS
+TESTS DONE
 - explanation of what I'm doing and why 
 - evaluation after 
-VISUALIZATION
+VISUALIZATION DONE, MOSTLY 
 - a finding or a result 
-STORY PITCH
+STORY PITCH <-- DO THIS!!!!!
 - main findings
 - potential problems 
 - reporting plan 
@@ -44,6 +44,12 @@ STORY PITCH
 
 What do I have so far? 
 My joining process 
+descriptive stats w data visualizations
+linear regression model 
+multiple regression model 
+correlation calculation
+z-scores 
+
 
 
 
@@ -347,13 +353,21 @@ summary(model)
 
 Once again, neither of these tests seems to point to a relationship between county wealth and number of hospitals. 
 
+--------------------------------------------------------------------------------------------------------
+
 Step 2: Multiple regression!
+
+I want to see how population and income interact to impact the number of hospitals in a county. The linear regressions didn't show much of an individual impact from either of these variables, but a multiple regression can add a new angle/some more context. 
+
 
 ```{r}
 multiple_regression <- lm(number_of_hospitals ~ county_population + PCPI_2023, data = joined_all_complete)
 summary(multiple_regression)
 ```
+Alright looking at the numbers here, it's not looking great. The adjusted r-squared is 0.43, which means that income and population have a fairly small impact on the number of hospitals in an area. That means there are other variables in play here! The residuals are also kind of big, and the coefficients are small. This makes it seem less likely that income and population are the main determinants of the number of hospitals in a county. 
 
+
+--------------------------------------------------------------------------------------------------------
 
 
 Step 3: looking at distribution of hospitals again. 
@@ -412,10 +426,63 @@ glimpse(shore)
 If I did this right, that means the shore has 7% of MD's population but 17% of its hospitals. Non-shore counties have ~92% of the population and 82% of hospitals. Looks like the shore has comparatively more hospitals than the rest of maryland, even though a couple counties don't have one.  
 
 
-
 ----------------------------------------------------------------------------------------------------
 
+Step 4: Correlation 
 
+Derek suggested running a correlation test, which turned out to be a great idea. The correlation between population and hospitals is much, much higher than the correlation between income and hospitals. This backs up a lot of what my descriptive stats were telling me: that a lot of hospitals were located around population centers. 
+
+```{r}
+joined_all_complete %>% summarize(correlation = cor(county_population, number_of_hospitals))
+#correlation = 0.688623 -- higher than expected!
+
+joined_all_complete %>% summarize(correlation = cor(PCPI_2023, number_of_hospitals))
+#correlation = 0.1204596 -- lower than expected!
+
+```
+--------------------------------------------------------------------------------------------------------
+
+Step 5: Z-Scores
+
+How big of an outlier is Baltimore with its 15 hospitals? Let's find out! 
+
+```{r}
+# z-scores
+joined_z_scores <- joined_all_complete |>
+  mutate(
+    mean_hospitals = mean(number_of_hospitals),
+    sd_hospitals = sd(number_of_hospitals),
+    z_score = (number_of_hospitals - mean_hospitals) / sd_hospitals
+  )
+view(joined_z_scores)
+
+# unusual counties
+unusual_counties <- joined_z_scores |>
+  filter(abs(z_score) > 2) |>
+  arrange(desc(abs(z_score)))
+
+# display
+cat("unusual hospital counties:", nrow(unusual_counties), 
+    "out of", nrow(joined_z_scores), "total counties (", 
+    round(nrow(unusual_counties)/nrow(joined_z_scores)*100, 2), "%)")
+
+```
+According to this Z-score data, Baltimore City is coming up on FOUR standard deviations above the mean, so it's a huge outlier. It also seems to be the only one with an "unusual" number of hospitals.  
+
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+THIS IS THE END OF MY FINAL PROJECT. BELOW IS THE STUFF I SUBMITTED FOR THE FIRST ASSIGNMENT. 
+--------------------------------------------------------------------------------------------------------
 TESTS I COULD RUN: 
 
 From my own brain: 
