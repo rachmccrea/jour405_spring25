@@ -47,6 +47,7 @@ My joining process
 descriptive stats w data visualizations
 linear regression model 
 multiple regression model 
+distribution: shore vs. rest of maryland <-- ADD A VISUALIZATION OR TWO HERE! pop, number of hospitals
 correlation calculation
 z-scores 
 
@@ -372,11 +373,10 @@ Alright looking at the numbers here, it's not looking great. The adjusted r-squa
 
 Step 3: looking at distribution of hospitals again. 
 
-I'm interested in the distribution of hospitals, since it looks like the 2 counties without any are both on the Eastern Shore. I want to make a chloropleth map, but don't have geometry info for the counties or anything. I'll try something else. 
-
-look at distribution of hospitals and distribution of population for eastern shore and western maryland -- does the ES have the same percentage of both population and hospitals? 
+I'm interested in the distribution of hospitals, since it looks like the 2 counties without any are both on the Eastern Shore. How are hospitals distributed between the Shore and Western MD? 
 
 ```{r}
+#forget if I learned how to do this in stat or in 472
 joined_hospital_population <- joined_hospital_population %>% 
   mutate(shore = case_when(
     NAME  == "Caroline County, Maryland" ~ "shore",
@@ -407,7 +407,7 @@ joined_hospital_population%>%
   summarize(hospitals = sum(number_of_hospitals))
 #shore has 11 hospitals, not_shore has 53. 
 #population now 
-joined_hospital_population%>% 
+shore_simple <- joined_hospital_population%>% 
   group_by(shore) %>% 
   summarize(hospitals = sum(number_of_hospitals), population = (sum(county_population)))
 
@@ -417,13 +417,30 @@ shore <- joined_hospital_population %>%
   mutate(pct_population = county_population/total_population, pct_hospitals = number_of_hospitals/total_hospitals) %>% 
   mutate(hospitals_per_1000 = number_of_hospitals/county_population * 1000)
 #getting an error message. asking terp ai. 
-#looks like i forgot to change "population" to "county_population" in the last line. 
+#looks like i forgot to change "population" to "county_population" in the last line. thanks terp ai!
 
-  
 glimpse(shore)
 
+ggplot()+
+  geom_bar(data = shore_simple, aes(x = shore, weight = hospitals))+
+  labs(
+    title="Hospitals on the Eastern Shore vs. Mainland MD", 
+    x="Region",
+    y="Number of Hospitals"
+  )
+
+ggplot()+
+  geom_bar(data = shore_simple, aes(x = shore, weight = population))+
+  labs(
+    title="Population on the Eastern Shore vs. Mainland MD", 
+    x="Region",
+    y="Population"
+  )
+
 ```
-If I did this right, that means the shore has 7% of MD's population but 17% of its hospitals. Non-shore counties have ~92% of the population and 82% of hospitals. Looks like the shore has comparatively more hospitals than the rest of maryland, even though a couple counties don't have one.  
+
+
+If I did this right, that means the shore has 7% of MD's population but 17% of its hospitals. Non-shore counties have ~92% of the population and 82% of hospitals. Looks like the shore has comparatively more hospitals than the rest of maryland, even though a couple counties don't have one. When I look at the data visualizations, it doesn't look like a huge difference between population proportion and hospital proportion. 
 
 
 ----------------------------------------------------------------------------------------------------
@@ -474,10 +491,18 @@ According to this Z-score data, Baltimore City is coming up on FOUR standard dev
 
 
 
+Your notebook must include a final section where you draft a story pitch, backed by your analysis. It needs to discuss your main findings, potential problems, and provide a reporting plan - 25 points
 
+PTICH: What makes Baltimore a hospital hub? 
+This would be a deep dive into the different hospitals in Baltimore, what they specialize in, and how the hospital industry impacts the city. 
 
+MAIN FINDINGS: My original hypothesis was that hospitals would be concentrated in counties that have a high population and high income levels (in essence, that access to healthcare correlated with wealth and population). That turned out to not be true. Though there was some correlation between population and hospitals, and there were more hospitals in and around the DC and Baltimore population centers, there wasn't much correlation between hospitals and income. My linear and multiple regressions, and my correlation coefficient, led me to that finding. If I had to choose another story to write, I'd probably write one debunking my previously held idea that wealthier areas had better healthcare acces -- it's not necessarily true according to my analysis. 
+However, I did find that Baltimore has way, way more hospitals than any other jurisdiction in Maryland. The 15 hospitals in the city made it an extreme outlier, according to the z-score test that I ran. Conventional knowledge tells me that it makes sense that there would be more hospitals in a big city, but Baltimore isn't THAT big population-wise and its z-score is pretty significant. 
+That leads me to my main pitch: what does the hospital/healthcare industry in Baltimore look like? Why are there so many more hospitals in the city than anywhere else? Is it a hub for a certain kind of treatment, or are there lots of medical schools in the city? What's the history of healthcare in Baltimore? Does it have a reputation in medical circles? How are hospitals distributed throughout neighborhoods -- does every neighborhood have easy access to a hospital? There's so much to dive into here. 
 
-
+REPORTING PLAN: What are my next steps? who do I talk to? where do I go? 
+My immediate next step would be to do some background research. I'd research the different hospitals, their locations, their history, their specializations, who runs them (university? religious org? state?) and any other important information. Next up would be reaching out to one or two academics at the UMD School of Medicine in Baltimore and the medical school at Johns Hopkins. The hope would be that a working professional and academic working at one of these schools could provide some more context on what the medical scene in Baltimore looks like, and could be a jumping-off point to talk to other sources. 
+Throughout the reporting process, I'd also like to talk to city officials and the Baltimore chamber of commerce to get their view on the impact of all these local hospitals on the city. I'd also want to try to figure out what these hospitals specialize in, talk to the doctors involved, and maybe even shadow one or two. I'd like to go to neighborhoods with many hospitals or very few hospitals to talk to residents about the impact of hospitals (or the lack of hospitals) on their neighborhood. 
 
 
 
